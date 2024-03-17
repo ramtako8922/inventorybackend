@@ -1,1 +1,1 @@
-<h1>Proyecto de Inventario Bckend</h1>
+<h1>Proyecto de Inventario Backend</h1>
