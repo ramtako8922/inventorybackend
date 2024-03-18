@@ -7,4 +7,5 @@ public interface ICategoryServices {
 
 //Metodos abstactos del servicio rest
     public ResponseEntity<CategoryResponseRest> search();
+    public ResponseEntity<CategoryResponseRest> searchById(Long id);
 }
