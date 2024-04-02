@@ -15,7 +15,7 @@ public class ResponseRest {
         HashMap<String,String> map=new HashMap<String,String>();
         map.put("type ",type);
         map.put("code ",code);
-        map.put("date ",data);
+        map.put("data ",data);
 
         //Se llena la metadata de la respuesta  de la API
         metadata.add(map);
