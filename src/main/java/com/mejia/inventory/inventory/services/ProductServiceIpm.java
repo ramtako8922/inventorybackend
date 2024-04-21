@@ -4,6 +4,7 @@ import com.mejia.inventory.inventory.dao.ICategoryDao;
 import com.mejia.inventory.inventory.dao.IProductDao;
 import com.mejia.inventory.inventory.models.Category;
 import com.mejia.inventory.inventory.models.Product;
+import com.mejia.inventory.inventory.response.CategoryResponseRest;
 import com.mejia.inventory.inventory.response.ProductResponseRest;
 import com.mejia.inventory.inventory.response.ResponseRest;
 import com.mejia.inventory.inventory.utill.Utill;
@@ -142,5 +143,40 @@ public class ProductServiceIpm implements IProductSevice {
         }
 
         return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.OK);
+    }
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    @Transactional
+    @Override
+    public ResponseEntity<ProductResponseRest> deleteById(Long id) {
+        ProductResponseRest responseRest = new ProductResponseRest();
+        List<Product> listProducts = new ArrayList<>();
+
+        try {
+            // Eliminar producto por id
+            productDao.deleteById(id);
+
+            List<Product> productList= (List<Product>) productDao.findAll();
+            responseRest.getProductResponse().setProducts(listProducts);
+
+            responseRest.setMetadata("OK","200","producto borrado con éxito");
+
+        }catch (Exception e){
+            responseRest.setMetadata("Respuesta no OK","404","Error al borrorar el producto");
+            e.getStackTrace();
+
+            return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.NOT_FOUND);
+
+        }
+        return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.OK);
+
+
+
+
+
     }
 }
