@@ -82,7 +82,7 @@ public class CategoryServicesIpm implements ICategoryServices {
      * @return esponseRest
      */
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public ResponseEntity<CategoryResponseRest> saveCategory(Category category) {
         CategoryResponseRest responseRest = new CategoryResponseRest();
         List<Category> categoryList =new ArrayList<>();
