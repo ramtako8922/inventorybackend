@@ -6,12 +6,14 @@ import org.springframework.http.ResponseEntity;
 
 public interface ICategoryServices {
 
-//Metodos abstactos del servicio rest
+    //Metodos abstactos del servicio rest
     public ResponseEntity<CategoryResponseRest> search();
+
     public ResponseEntity<CategoryResponseRest> searchById(Long id);
+
     public ResponseEntity<CategoryResponseRest> saveCategory(Category category);
 
-    public ResponseEntity<CategoryResponseRest> updateCategory(Category category,Long id);
+    public ResponseEntity<CategoryResponseRest> updateCategory(Category category, Long id);
 
     public ResponseEntity<CategoryResponseRest> deleteById(Long id);
 }

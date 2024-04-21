@@ -179,4 +179,41 @@ public class ProductServiceIpm implements IProductSevice {
 
 
     }
+@Transactional(readOnly = true)
+    @Override
+    public ResponseEntity<ProductResponseRest> searchAll() {
+        ProductResponseRest responseRest = new ProductResponseRest();
+        List<Product> listProducts = new ArrayList<>();
+        List<Product> listAux=new ArrayList<>();
+
+        try {
+            // obtener todos los prodductos
+            listAux= (List<Product>) productDao.findAll();
+
+
+            if (listAux.size()>0) {
+                listAux.stream().forEach((p)->{
+                    byte[] imageDescomprese = Utill.decompressZLib(p.getPicture());
+                    p.setPicture(imageDescomprese);
+                    listProducts.add(p);
+
+                });
+
+                responseRest.getProductResponse().setProducts(listProducts);
+                responseRest.setMetadata("Respuesta ok", "00", "Productos encontrados");
+
+            } else {
+                responseRest.setMetadata("Respuesta no OK", "-1", "Productos no presentes en el inventario por el nombre");
+                return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.NOT_FOUND);
+            }
+
+        } catch (Exception e) {
+            e.getStackTrace();
+            responseRest.setMetadata("Respuesta no OK", "-1", "Producto no presentes en el inventario");
+            return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+
+        return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.OK);
+    }
 }
