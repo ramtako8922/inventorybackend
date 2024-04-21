@@ -155,21 +155,36 @@ public class ProductServiceIpm implements IProductSevice {
     public ResponseEntity<ProductResponseRest> deleteById(Long id) {
         ProductResponseRest responseRest = new ProductResponseRest();
         List<Product> listProducts = new ArrayList<>();
+        List<Product> listAux=new ArrayList<>();
 
         try {
             // Eliminar producto por id
             productDao.deleteById(id);
 
-            List<Product> productList= (List<Product>) productDao.findAll();
-            responseRest.getProductResponse().setProducts(listProducts);
+            listAux= (List<Product>) productDao.findAll();
+            if (listAux.size()>0) {
+                listAux.stream().forEach((p) -> {
+                    byte[] imageDescomprese = Utill.decompressZLib(p.getPicture());
+                    p.setPicture(imageDescomprese);
+                    listProducts.add(p);
 
-            responseRest.setMetadata("OK","200","producto borrado con éxito");
+                });
+                responseRest.getProductResponse().setProducts(listProducts);
+
+                responseRest.setMetadata("OK","200","producto borrado con éxito");
+
+            }else {
+
+                responseRest.setMetadata("Respuesta no OK", "-1", "Producto no presente en el inventario por el id");
+                return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.NOT_FOUND);
+
+            }
 
         }catch (Exception e){
             responseRest.setMetadata("Respuesta no OK","404","Error al borrorar el producto");
             e.getStackTrace();
 
-            return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.INTERNAL_SERVER_ERROR);
 
         }
         return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.OK);
@@ -214,6 +229,64 @@ public class ProductServiceIpm implements IProductSevice {
 
         }
 
+        return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.OK);
+    }
+@Transactional
+    @Override
+    public ResponseEntity<ProductResponseRest> updateProduct(Product product, Long categoryID, Long id) {
+        ProductResponseRest responseRest = new ProductResponseRest();
+        List<Product> listProducts = new ArrayList<>();
+
+        try {
+            // Buscar la categoria por id que se le setea al producto
+            Optional<Category> category = categoryDao.findById(categoryID);
+
+            if (category.isPresent()) {
+                product.setCategory(category.get());
+
+            } else {
+                responseRest.setMetadata("Respuesta no OK", "-1", "Categoria no presente en el inventario");
+                return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.NOT_FOUND);
+            }
+
+            //actualizar el producto
+
+            Optional<Product> savedProduct = productDao.findById(id);
+            if (savedProduct.isPresent()) {
+                savedProduct.get().setName(product.getName());
+                savedProduct.get().setPrice(product.getPrice());
+                savedProduct.get().setQuantity(product.getQuantity());
+                savedProduct.get().setPicture(product.getPicture());
+                savedProduct.get().setCategory(product.getCategory());
+                //Guardo producto actualizados
+                Product productUpdate=productDao.save(savedProduct.get());
+
+                if (productUpdate != null) {
+                    listProducts.add(productUpdate);
+                    responseRest.getProductResponse().setProducts(listProducts);
+                    responseRest.setMetadata("Respuesta ok", "200", "Prducto actualizados");
+
+
+                }else {
+                    responseRest.setMetadata("Respuesta no OK", "-1", "Error al actualizar  prducto");
+                    return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.BAD_REQUEST);
+
+                }
+
+            } else {
+                responseRest.setMetadata("Respuesta no OK", "-1", "Error al actualizar prducto");
+                return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.NOT_FOUND);
+
+            }
+
+
+        } catch (Exception e) {
+            e.getStackTrace();
+            responseRest.setMetadata("Respuesta no OK", "-1", "Error al actualizar prducto");
+            return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.INTERNAL_SERVER_ERROR);
+
+
+        }
         return new ResponseEntity<ProductResponseRest>(responseRest, HttpStatus.OK);
     }
 }
